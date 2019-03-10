@@ -31,15 +31,15 @@ class MarkdownHelper
 
     public function parse(string $source): string
     {
-        if ($this->isDebug) {
-            if (stripos($source, 'bacon') !== false) {
-                $this->logger->info('On parle encore de jambon !!!!!');
-            }
+
+        if (stripos($source, 'bacon') !== false) {
+            $this->logger->info('On parle encore de jambon !!!!!');
         }
 
-        //dump($this->cache);die;
+        if ($this->isDebug) {
+            return $this->markdown->transform($source);
 
-
+        }
 
         $item = $this->cache->getItem('markdown_'.md5($source));
         if(!$item->isHit()){

@@ -3,6 +3,7 @@
 parameters:
     cache_adapter: 'cache.adapter.filesystem'
     $isDebug: '%kernel.debug%'
+    locale: 'en'
 
 services:
     #custom aliases for auto-wiring
