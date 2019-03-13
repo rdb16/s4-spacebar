@@ -8,25 +8,17 @@
 
 namespace App\Controller;
 
-
 use App\Entity\Article;
-use App\Service\MarkdownHelper;
 use App\Service\SlackClient;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-
-
 class ArticleController extends AbstractController
 {
-
-    //comme $isDebug est défini comme param dans service.yaml
-    //comme un controller est comme un service
-    //on passe la var avec un constructeurÒ
+    //comme $isDebug est défini comme param dans service.yaml comme un controller est comme un service, on construit
     /**
      * @var
      */
@@ -34,37 +26,36 @@ class ArticleController extends AbstractController
 
     public function __construct(bool $isDebug)
     {
-       //dump($isDebug);die;
-        $this->isDebug = $isDebug;
+          $this->isDebug = $isDebug;
     }
-
 
     /**
      * @Route("/", name="app_homepage")
      */
-    public function homepage()
+    public function homepage(EntityManagerInterface $em)
     {
-        return $this->render('article/homepage.html.twig');
+        $repository = $em->getRepository(Article::class);
+        //$articles = $repository->findAll();
+        //$articles = $repository->findBy([], ['publishedAt' =>'DESC']);
+        $articles = $repository->findAllPublishedOrderedByNewest();
+        //dump($articles);die;
+        return $this->render('article/homepage.html.twig', [
+            'articles' => $articles,
+        ]);
     }
 
     /**
      * @Route("/news/{slug}", name="article_show")
-     *
+     * @param Article $article
+     * @param SlackClient $slack
+     * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function show($slug, SlackClient $slack, EntityManagerInterface $em)
+    public function show(Article $article, SlackClient $slack)
     {
-        if ($slug === 'khaaaaaan'){
+        if ($article->getSlug() === 'khaaaaaan'){
             $slack->sendMessage('Khan2', 'Re-salut DUCON  !!!!!!');
         }
 
-        $repository = $em->getRepository(Article::class);
-        /** @var Article $article */
-        $article = $repository->findOneBy(['slug' =>$slug]);
-        if (!$article) {
-            throw $this->createNotFoundException(sprintf('No article for slug "%s"', $slug));
-        }
-
-        //dump($article);die;
 
         $comments = [
             'I ate a normal rock once. It did NOT taste like bacon!',
@@ -85,12 +76,14 @@ class ArticleController extends AbstractController
      * @Route("/news/{slug}/heart", name="article_toggle_heart", methods={"POST"})
      *
      */
-    public function toggleArticleHeart($slug, LoggerInterface $logger)
+    public function toggleArticleHeart(Article $article, LoggerInterface $logger, EntityManagerInterface $em)
     {
-        // TODO actually heart/unheart the article
+        $article->incrementHeartCount();
+        $em->flush();
 
         $logger->info((' un article a subi un coeur'));
 
-        return new JsonResponse(['hearts' => rand(5, 100)]);
+
+        return new JsonResponse(['hearts' => $article->getHeartCount()]);
     }
 }
