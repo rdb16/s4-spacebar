@@ -9,6 +9,7 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Repository\CommentRepository;
 use App\Service\SlackClient;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -57,18 +58,10 @@ class ArticleController extends AbstractController
         }
 
 
-        $comments = [
-            'I ate a normal rock once. It did NOT taste like bacon!',
-            'Woohoo! I\'m going on an all-asteroid diet!',
-            'I like bacon too! Buy some from my site! bakinsomebacon.com',
-        ];
-
-
-
+        // on appellera directement $article->getComments dans twig
        return $this->render('article/show.html.twig', [
             'article' => $article,
-            'comments' => $comments,
-             ]);
+            ]);
 
     }
 

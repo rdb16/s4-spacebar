@@ -2,10 +2,11 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Comment;
 use Doctrine\Common\Persistence\ObjectManager;
 use App\Entity\Article;
 
-class ArticleFixtures extends BaseFixture
+class ArticleFixture extends BaseFixture
 {
     private static $articleTitles = [
         'Why Asteroids taste like bacon',
@@ -28,7 +29,7 @@ class ArticleFixtures extends BaseFixture
 
     public function loadData(ObjectManager $manager)
     {
-        $this->createMany(Article::class, 10, function(Article $article, $count) {
+        $this->createMany(Article::class, 10, function(Article $article, $count) use ($manager) {
             $article->setTitle($this->faker->randomElement(self::$articleTitles))
                 ->setContent(<<<EOF
 picy **jalapeno bacon** ipsum dolor amet veniam shank in dolore. Ham hock nisi landjaeger cow,
@@ -57,6 +58,7 @@ EOF
                 ->setHeartCount($this->faker->numberBetween(5,100))
                 ->setImageFilemame($this->faker->randomElement(self::$articleImages))
                 ;
+            $manager->persist($article);
         });
 
         $manager->flush();
