@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Comment;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Criteria;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Bridge\Doctrine\RegistryInterface;
 
 /**
@@ -31,22 +32,22 @@ class CommentRepository extends ServiceEntityRepository
 
     /**
      * @param string|null $term
-     * @return Comment[]
+     * @return QueryBuilder
      */
-     public function findAllWithSearch(?string $term)
+     public function getWithSearchQueryBuilder(?string $term): QueryBuilder
     {
-        $qb = $this->createQueryBuilder('c');
+        $qb = $this->createQueryBuilder('c')
+                ->innerJoin('c.article', 'a')//a pour article
+                ->addSelect('a');//en plus de c, le repository, ramène les objets de a
 
         if ($term) {
-            $qb->andWhere('c.content LIKE :term OR c.authorName LIKE :term')
+            $qb->andWhere('c.content LIKE :term OR c.authorName LIKE :term OR a.title Like :term')
                 ->setParameter('term', '%'.$term.'%')
             ;
         }
 
         return $qb
             ->orderBy('c.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult()
         ;
     }
 

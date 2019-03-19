@@ -2,12 +2,15 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Comment;
+use App\Entity\Tag;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
 use App\Entity\Article;
 
-class ArticleFixture extends BaseFixture
-{
+
+
+
+class ArticleFixture extends BaseFixture implements DependentFixtureInterface{
     private static $articleTitles = [
         'Why Asteroids taste like bacon',
         'Life on Planet Mercury: Tan relaxing & fabulous',
@@ -25,7 +28,6 @@ class ArticleFixture extends BaseFixture
         'rdb',
         'Trou duc'
     ];
-
 
     public function loadData(ObjectManager $manager)
     {
@@ -51,16 +53,31 @@ fugiat.
 EOF
              );
 
+
             if ($this->faker->boolean(70)){
                 $article->setPublishedAt($this->faker->dateTimeBetween('-100 days', '-1 days'));
             }
+
             $article->setAuthor($this->faker->randomElement(self::$articleAuthors))
                 ->setHeartCount($this->faker->numberBetween(5,100))
                 ->setImageFilemame($this->faker->randomElement(self::$articleImages))
                 ;
+
+            $tags = $this->getRandomReferences(Tag::class, $this->faker->numberBetween(1,5));
+            foreach($tags as $tag){
+                //dump($tag.name);
+                $article->addTag($tag);
+            }
             $manager->persist($article);
-        });
+       });
 
         $manager->flush();
+    }
+    /**
+     * @return array
+     */
+    public function getDependencies()
+    {
+        return [TagFixture::class];
     }
 }

@@ -3,11 +3,11 @@
 {% block title %}Manage Comments{% endblock %}
 
 
- {% block content_class %}{{ parent() }} show-article-container-border-green{% endblock %}
+{% block content_class %}{{ parent() }} show-article-container-border-green{% endblock %}
 {% block content_body %}
     <div class="row">
         <div class="col-sm1-12">
-            <H1>Manage Comments</H1>
+            <H1>Manage Comments ({{ pagination.getTotalItemCount }})</H1>
 
             <form>
                 <div class="input-group mb-3">
@@ -15,6 +15,7 @@
                            name="q"
                            class="form-control"
                            placeholder="Search..."
+                           value="{{ app.request.query.get('q') }}"
                     >
                     <div class="input-group-append">
                         <button type="submit"
@@ -36,7 +37,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for comment in comments %}
+                {% for comment in pagination %}
                     <tr>
                         <td>
                             <a href="{{ path('article_show', {'slug': comment.article.slug}) }}">
@@ -54,10 +55,15 @@
                         </td>
 
                     </tr>
-
+                {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No comments found</td>
+                    </tr>
                 {% endfor %}
                 </tbody>
             </table>
+
+            {{ knp_pagination_render(pagination) }}
 
         </div>
     </div>
