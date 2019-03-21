@@ -1,33 +1,25 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: rdb
- * Date: 2019-02-15
- * Time: 18:14
- */
 
 namespace App\DataFixtures;
 
-
 use App\Entity\User;
-use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
-use Faker;
 
-class UserFixture extends Fixture
+class UserFixture extends Base_2Fixture
 {
-    public function load(ObjectManager $manager)
+    public function loadData(ObjectManager $manager)
     {
-
-        $faker = Faker\Factory::create('fr_FR');
-
-        for($i=0; $i < 10; $i++){
+        $this->createMany('10', 'main_users', function($i){
             $user = new User();
-            $user->setFirstName($faker->firstName);
-            $user->setEmail(sprintf('spacebar%d@example.com', $i + 1));
-            $manager->persist($user);
-        }
+            $user->setEmail(sprintf('spacebar%d@example.com', $i))
+                ->setFirstName($this->faker->firstName);
+
+            return $user;
+        });
+
         $manager->flush();
     }
-
 }
+
+
+
