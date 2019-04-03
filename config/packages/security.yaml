@@ -18,6 +18,10 @@ security:
             logout:
                 path: app_logout
 
+            remember_me:
+              secret: '%kernel.secret%'
+              lifetime: 2592000
+
             # activate different ways to authenticate
 
             # http_basic: true
@@ -25,6 +29,9 @@ security:
 
             # form_login: true
             # https://symfony.com/doc/current/security/form_login_setup.html
+    encoders:
+      App\Entity\User:
+        algorithm: bcrypt
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used

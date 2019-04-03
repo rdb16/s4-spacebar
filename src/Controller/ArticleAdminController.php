@@ -4,10 +4,16 @@ namespace App\Controller;
 
 use App\Entity\Article;
 use Doctrine\ORM\EntityManagerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class ArticleAdminController
+ * @package App\Controller
+ * @IsGranted("ROLE_ADMIN")
+ */
 class ArticleAdminController extends AbstractController
 {
     /**
@@ -22,7 +28,7 @@ class ArticleAdminController extends AbstractController
 
     /**
      *
-     * @Route("/admin/article/new")
+     * @Route("/admin/article/new", name="admin_article_new")
      * @param EntityManagerInterface $em
      * @return Response
      * @throws \Exception
@@ -30,7 +36,7 @@ class ArticleAdminController extends AbstractController
     public function new(EntityManagerInterface $em)
     {
 
-        die('todo');
+        //die('todo');
         $article = new Article();
         $article->setTitle('Why Asteroids taste like bacon')
             ->setSlug('why-asteroids-taste-like-bacon'.rand(100,999))
