@@ -12,7 +12,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class CommentAdminController
  * @package App\Controller
- * @IsGranted("ROLE_ADMIN")
+ * @IsGranted("ROLE_ADMIN_COMMENT")
  */
 class CommentAdminController extends AbstractController
 {
