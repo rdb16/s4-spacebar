@@ -10,7 +10,7 @@ use App\Entity\Article;
 
 
 
-class ArticleFixture extends BaseFixture implements DependentFixtureInterface{
+class ArticleFixture extends Base_2Fixture implements DependentFixtureInterface{
     private static $articleTitles = [
         'Why Asteroids taste like bacon',
         'Life on Planet Mercury: Tan relaxing & fabulous',
@@ -31,7 +31,12 @@ class ArticleFixture extends BaseFixture implements DependentFixtureInterface{
 
     public function loadData(ObjectManager $manager)
     {
-        $this->createMany(Article::class, 10, function(Article $article, $count) use ($manager) {
+
+
+        $this->createMany(20,'main_articles', function($count) use ($manager) {
+
+            $article = new Article();
+
             $article->setTitle($this->faker->randomElement(self::$articleTitles))
                 ->setContent(<<<EOF
 picy **jalapeno bacon** ipsum dolor amet veniam shank in dolore. Ham hock nisi landjaeger cow,
@@ -58,7 +63,7 @@ EOF
                 $article->setPublishedAt($this->faker->dateTimeBetween('-100 days', '-1 days'));
             }
 
-            $article->setAuthor($this->faker->randomElement(self::$articleAuthors))
+            $article->setAuthor($this->getRandomReference('main_users'))
                 ->setHeartCount($this->faker->numberBetween(5,100))
                 ->setImageFilemame($this->faker->randomElement(self::$articleImages))
                 ;
@@ -69,6 +74,8 @@ EOF
                 $article->addTag($tag);
             }
             $manager->persist($article);
+
+            return $article;
        });
 
         $manager->flush();
@@ -78,6 +85,8 @@ EOF
      */
     public function getDependencies()
     {
-        return [TagFixture::class];
+        return [
+            TagFixture::class,
+            UserFixture::class];
     }
 }
