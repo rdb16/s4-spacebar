@@ -3,16 +3,18 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Repository\ArticleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Form\ArticleFormType;
 
 /**
  * Class ArticleAdminController
  * @package App\Controller
- * @IsGranted("ROLE_ADMIN_ARTICLE")
  */
 class ArticleAdminController extends AbstractController
 {
@@ -27,51 +29,59 @@ class ArticleAdminController extends AbstractController
     }
 
     /**
+     * @param Article $article
+     * @Route("/admin/article/{id}/edit")
+     * @IsGranted("MANAGE", subject="article")
+     */
+    public function edit(Article $article)
+    {
+
+        //dd($article);
+
+    }
+
+    /**
      *
      * @Route("/admin/article/new", name="admin_article_new")
      * @param EntityManagerInterface $em
      * @return Response
      * @throws \Exception
+     * @IsGranted("ROLE_ADMIN_ARTICLE")
      */
-    public function new(EntityManagerInterface $em)
+    public function new(EntityManagerInterface $em, Request $request)
     {
+        $form = $this->createForm(ArticleFormType::class);
 
-        //die('todo');
-        $article = new Article();
-        $article->setTitle('Why Asteroids taste like bacon')
-            ->setSlug('why-asteroids-taste-like-bacon'.rand(100,999))
-            ->setTitle('')
-            ->setContent(<<<EOF
-picy **jalapeno bacon** ipsum dolor amet veniam shank in dolore. Ham hock nisi landjaeger cow,
-lorem proident [beef ribs](https://baconipsum.com/) aute enim veniam ut cillum pork chuck picanha. Dolore reprehenderit
-labore minim pork belly spare ribs cupim short loin in. Elit exercitation eiusmod dolore cow
-**turkey** shank eu pork belly meatball non cupim.
-Laboris beef ribs fatback fugiat eiusmod jowl kielbasa alcatra dolore velit ea ball tip. Pariatur
-laboris sunt venison, et laborum dolore minim non meatball. Shankle eu flank aliqua shoulder,
-capicola biltong frankfurter boudin cupim officia. Exercitation fugiat consectetur ham. Adipisicing
-picanha shank et filet mignon pork belly ut ullamco. Irure velit turducken ground round doner incididunt
-occaecat lorem meatball prosciutto quis strip steak.
-Meatball adipisicing ribeye bacon strip steak eu. Consectetur ham hock pork hamburger enim strip steak
-mollit quis officia meatloaf tri-tip swine. Cow ut reprehenderit, buffalo incididunt in filet mignon
-strip steak pork belly aliquip capicola officia. Labore deserunt esse chicken lorem shoulder tail consectetur
-cow est ribeye adipisicing. Pig hamburger pork belly enim. Do porchetta minim capicola irure pancetta chuck
-fugiat.
-EOF
-        );
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()){
+            //dd($form->getData());
+            /** @var @var Article $article */
+            $article = $form->getData();
+            $article->setAuthor($this->getUser());
 
-        if (rand(1, 10) >2 ){
-            $article->setPublishedAt(new \DateTime(sprintf('-%d days', rand(1,100))));
+
+            $em->persist($article);
+            $em->flush();
+
+            $this->addFlash('success', 'Article créé! le savoir c\'est le pouvoir');
+            return $this->redirectToRoute('admin_article_list');
         }
-        $article->setAuthor('Mike ducon')
-            ->setHeartCount(rand(5,100))
-            ->setImageFilemame('asteroid.jpeg');
 
-        $em->persist($article);
-        $em->flush();
+        return $this->render('article_admin/new.html.twig', [
+            'articleForm' => $form->createView(),
+        ]);
+    }
 
-        return new Response(sprintf('BRAVO !!! New article dont id : #%d slu: %s',
-            $article->getId(),
-            $article->getSlug()
-        ));
+    /**
+     * @param ArticleRepository $articleRepo
+     * @Route("/admin/article", name="admin_article_list")
+     */
+    public function list(ArticleRepository $articleRepo)
+    {
+        $articles = $articleRepo->findAll();
+        return $this->render('article_admin/list.html.twig', [
+            'articles' =>$articles
+        ]);
+
     }
 }
